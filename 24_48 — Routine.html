@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)file:///C:/Users/User/Downloads/routine-tracker.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>24/48 — Routine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./24_48 — Routine_files/css2" rel="stylesheet">
+<style>
+  :root{
+    --ink:#EDEAE3;
+    --ink-dim:#9A9690;
+    --ink-faint:#6B6862;
+    --base:#1C1E22;
+    --base-raised:#24262B;
+    --base-card:#2A2D33;
+    --line:#383B42;
+    --ember:#E8743B;
+    --ember-dim:#5A3622;
+    --steel:#5B8AA6;
+    --steel-dim:#2E4452;
+    --good:#7FA876;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--base); color:var(--ink); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;}
+  body{
+    min-height:100vh;
+    padding-bottom:48px;
+  }
+  h1,h2,h3,.display{
+    font-family:'Barlow Condensed',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:0 18px;}
+
+  /* ===== Header / Mode Switch ===== */
+  .topbar{
+    padding:22px 18px 0;
+    max-width:560px;
+    margin:0 auto;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+  }
+  .brand{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.12em; color:var(--ink-dim); text-transform:uppercase;}
+  .datestamp{font-size:12px; color:var(--ink-faint); font-family:'Inter',sans-serif;}
+
+  .mode-shell{
+    margin:18px 0 22px;
+    border-radius:18px;
+    padding:22px 20px 20px;
+    position:relative;
+    overflow:hidden;
+    transition:background 0.5s ease, box-shadow 0.5s ease;
+    border:1px solid var(--line);
+  }
+  .mode-shell.on-shift{
+    background:linear-gradient(160deg, var(--ember-dim) 0%, var(--base-raised) 60%);
+    box-shadow:0 0 0 1px rgba(232,116,59,0.25) inset;
+  }
+  .mode-shell.off-shift{
+    background:linear-gradient(160deg, var(--steel-dim) 0%, var(--base-raised) 60%);
+    box-shadow:0 0 0 1px rgba(91,138,166,0.25) inset;
+  }
+  .mode-label-row{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .pulse-dot{
+    width:9px; height:9px; border-radius:50%;
+    flex-shrink:0;
+  }
+  .on-shift .pulse-dot{background:var(--ember); box-shadow:0 0 0 0 rgba(232,116,59,0.6); animation:pulse-ember 2s infinite;}
+  .off-shift .pulse-dot{background:var(--steel); box-shadow:0 0 0 0 rgba(91,138,166,0.6); animation:pulse-steel 2s infinite;}
+  @keyframes pulse-ember{0%{box-shadow:0 0 0 0 rgba(232,116,59,0.5);}70%{box-shadow:0 0 0 8px rgba(232,116,59,0);}100%{box-shadow:0 0 0 0 rgba(232,116,59,0);}}
+  @keyframes pulse-steel{0%{box-shadow:0 0 0 0 rgba(91,138,166,0.5);}70%{box-shadow:0 0 0 8px rgba(91,138,166,0);}100%{box-shadow:0 0 0 0 rgba(91,138,166,0);}}
+
+  .mode-status{font-size:13px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-dim);}
+  .mode-title{font-size:30px; font-weight:700; margin:2px 0 14px; line-height:1;}
+  .on-shift .mode-title{color:var(--ember);}
+  .off-shift .mode-title{color:var(--steel);}
+
+  .mode-toggle{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+  }
+  .toggle-btn{
+    flex:1;
+    padding:11px 0;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,0.2);
+    color:var(--ink-dim);
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    font-size:13px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+  }
+  .toggle-btn.active.on{background:var(--ember); color:#1C1E22; border-color:var(--ember);}
+  .toggle-btn.active.off1{background:var(--steel); color:#1C1E22; border-color:var(--steel);}
+  .toggle-btn.active.off2{background:var(--steel); color:#1C1E22; border-color:var(--steel);}
+
+  /* ===== Progress ring ===== */
+  .progress-row{display:flex; align-items:center; gap:12px; margin-top:4px;}
+  .progress-track{flex:1; height:6px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden;}
+  .progress-fill{height:100%; border-radius:4px; transition:width 0.4s ease;}
+  .on-shift .progress-fill{background:var(--ember);}
+  .off-shift .progress-fill{background:var(--steel);}
+  .progress-pct{font-size:12px; color:var(--ink-faint); font-weight:600; min-width:34px; text-align:right;}
+
+  /* ===== Section ===== */
+  .section{margin-bottom:26px;}
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+    padding:0 2px;
+  }
+  .section-title{font-size:13px; font-weight:600; color:var(--ink-faint); letter-spacing:0.1em; text-transform:uppercase;}
+  .section-sub{font-size:12px; color:var(--ink-faint);}
+
+  /* ===== Checklist items ===== */
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:13px 14px;
+    background:var(--base-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:8px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, opacity 0.2s ease;
+  }
+  .item:active{transform:scale(0.99);}
+  .item.done{opacity:0.5;}
+  .checkbox{
+    width:21px; height:21px;
+    border-radius:6px;
+    border:1.5px solid var(--ink-faint);
+    flex-shrink:0;
+    margin-top:1px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all 0.2s ease;
+  }
+  .item.done .checkbox{background:var(--good); border-color:var(--good);}
+  .checkbox svg{width:13px; height:13px; opacity:0; transition:opacity 0.15s ease;}
+  .item.done .checkbox svg{opacity:1;}
+  .item-body{flex:1; min-width:0;}
+  .item-title{font-size:15px; font-weight:500; line-height:1.35; color:var(--ink);}
+  .item.done .item-title{text-decoration:line-through; color:var(--ink-faint);}
+  .item-note{font-size:12.5px; color:var(--ink-faint); margin-top:3px; line-height:1.4;}
+  .item-tag{
+    display:inline-block;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:2px 7px;
+    border-radius:5px;
+    margin-top:6px;
+    color:var(--ink-dim);
+    background:rgba(255,255,255,0.06);
+  }
+
+  /* ===== Quick note / money check-in ===== */
+  .note-box{
+    background:var(--base-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-top:6px;
+  }
+  .note-box textarea{
+    width:100%;
+    background:transparent;
+    border:none;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    resize:none;
+    outline:none;
+    min-height:20px;
+  }
+  .note-box textarea::placeholder{color:var(--ink-faint);}
+
+  /* ===== Streak / footer stat ===== */
+  .stat-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .stat-card{
+    flex:1;
+    background:var(--base-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 12px;
+    text-align:center;
+  }
+  .stat-num{font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:700; color:var(--ink); line-height:1;}
+  .stat-label{font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.07em; margin-top:4px;}
+
+  .reset-link{
+    display:block;
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-top:20px;
+    text-decoration:underline;
+    cursor:pointer;
+    background:none;
+    border:none;
+    width:100%;
+    padding:10px;
+  }
+
+  .loading{text-align:center; padding:60px 0; color:var(--ink-faint); font-size:13px;}
+
+  /* ===== Top-level tabs ===== */
+  .tabbar{
+    display:flex;
+    gap:6px;
+    max-width:560px;
+    margin:16px auto 0;
+    padding:0 18px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:10px 0;
+    background:var(--base-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--ink-faint);
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .tab-btn.active{background:var(--ink); color:var(--base); border-color:var(--ink);}
+
+  /* ===== Debt dashboard ===== */
+  .debt-hero{
+    margin:18px 0 22px;
+    border-radius:18px;
+    padding:22px 20px;
+    background:linear-gradient(160deg, #3A2A24 0%, var(--base-raised) 65%);
+    border:1px solid var(--line);
+    box-shadow:0 0 0 1px rgba(232,116,59,0.18) inset;
+  }
+  .debt-hero-label{font-size:13px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-dim);}
+  .debt-hero-total{font-family:'Barlow Condensed',sans-serif; font-size:38px; font-weight:700; color:var(--ink); margin:4px 0 2px; line-height:1;}
+  .debt-hero-sub{font-size:12.5px; color:var(--ink-faint);}
+  .debt-hero-bar{margin-top:16px;}
+  .debt-hero-track{height:8px; border-radius:5px; background:rgba(255,255,255,0.08); overflow:hidden;}
+  .debt-hero-fill{height:100%; border-radius:5px; background:linear-gradient(90deg, var(--good), #9FC494); transition:width 0.4s ease;}
+  .debt-hero-stats{display:flex; justify-content:space-between; margin-top:8px; font-size:11.5px; color:var(--ink-faint);}
+
+  .target-card{
+    background:var(--base-card);
+    border:1.5px solid var(--ember);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:18px;
+    box-shadow:0 0 0 1px rgba(232,116,59,0.15) inset;
+  }
+  .target-eyebrow{font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ember);}
+  .target-name{font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; margin:3px 0 8px;}
+  .target-row{display:flex; justify-content:space-between; font-size:13px; color:var(--ink-dim); margin-bottom:3px;}
+  .target-row b{color:var(--ink); font-weight:600;}
+
+  .debt-item{
+    background:var(--base-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:8px;
+  }
+  .debt-item.paid-off{opacity:0.5;}
+  .debt-item-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .debt-item-name{font-size:15px; font-weight:600; color:var(--ink);}
+  .debt-item-meta{font-size:11.5px; color:var(--ink-faint); margin-top:2px;}
+  .debt-item-order{
+    flex-shrink:0;
+    width:24px; height:24px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.06);
+    color:var(--ink-faint);
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .debt-item.is-target .debt-item-order{background:var(--ember); color:#1C1E22;}
+  .debt-item-fields{display:flex; gap:8px; margin-top:10px;}
+  .field-group{flex:1;}
+  .field-label{font-size:10px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px;}
+  .field-input{
+    width:100%;
+    background:rgba(0,0,0,0.25);
+    border:1px solid var(--line);
+    border-radius:8px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    padding:7px 8px;
+    outline:none;
+  }
+  .field-input:focus{border-color:var(--steel);}
+  .debt-item-progress{margin-top:10px;}
+  .debt-item-track{height:5px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden;}
+  .debt-item-fillbar{height:100%; border-radius:3px; background:var(--steel);}
+  .paid-badge{
+    font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--good); background:rgba(127,168,118,0.15);
+    padding:3px 8px; border-radius:6px;
+  }
+  .group-divider{
+    font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.08em;
+    margin:18px 0 8px 2px; font-weight:600;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .pulse-dot{animation:none;}
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">24 / 48</div>
+  <div class="datestamp" id="datestamp">WED, JUN 24</div>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn active" id="tabRoutine" data-tab="routine">Routine</button>
+  <button class="tab-btn" id="tabDebt" data-tab="debt">Debt</button>
+</div>
+
+<div class="wrap" id="app"><div class="mode-shell off-shift">
+      <div class="mode-label-row">
+        <div class="pulse-dot"></div>
+        <div class="mode-status">OFF — DAY 1</div>
+      </div>
+      <div class="mode-title">Reset Day</div>
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+        <div class="progress-pct">0/6</div>
+      </div>
+      <div class="mode-toggle">
+        <button class="toggle-btn " data-mode="onshift">On Shift</button>
+        <button class="toggle-btn active off1" data-mode="off1">Off · Day 1</button>
+        <button class="toggle-btn " data-mode="off2">Off · Day 2</button>
+      </div>
+    </div><div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">0%</div>
+        <div class="stat-label">Today</div>
+      </div>
+    </div><div class="section">
+      <div class="section-head">
+        <div class="section-title">Checklist</div>
+        <div class="section-sub">0/6 done</div>
+      </div><div class="item " data-id="protect-sleep">
+        <div class="checkbox"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#1C1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div class="item-body">
+          <div class="item-title">Protect sleep — no errands before wake time</div>
+          <div class="item-note">Recovery first. The rest of the day depends on this.</div>
+          <div class="item-tag">RECOVERY</div>
+          
+        </div>
+      </div><div class="item " data-id="grocery-run">
+        <div class="checkbox"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#1C1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div class="item-body">
+          <div class="item-title">Grocery run</div>
+          <div class="item-note">Stock for the week — this is what kills the takeout pattern</div>
+          <div class="item-tag">NUTRITION</div>
+          
+        </div>
+      </div><div class="item " data-id="meal-prep">
+        <div class="checkbox"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#1C1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div class="item-body">
+          <div class="item-title">Meal prep batch</div>
+          <div class="item-note">Sets up next on-shift day + Day 2 off</div>
+          <div class="item-tag">NUTRITION</div>
+          
+        </div>
+      </div><div class="item " data-id="workout-off1">
+        <div class="checkbox"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#1C1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div class="item-body">
+          <div class="item-title">Workout</div>
+          <div class="item-note">Per your program</div>
+          <div class="item-tag">TRAINING</div>
+          
+        </div>
+      </div><div class="item " data-id="money-checkin">
+        <div class="checkbox"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#1C1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div class="item-body">
+          <div class="item-title">Money check-in (10 min)</div>
+          <div class="item-note">Card balances, autopay confirmed, debt payoff progress</div>
+          <div class="item-tag">FINANCE</div>
+          <div style="margin-top:8px;"><button class="reset-link debt-link" data-action="goto-debt" style="text-decoration:none; background:rgba(91,138,166,0.15); color:var(--steel); border-radius:7px; padding:6px 10px; font-size:11.5px; font-weight:600; letter-spacing:0.03em; width:auto; display:inline-block;">View debt tracker →</button></div>
+        </div>
+      </div><div class="item " data-id="prep-next-shift">
+        <div class="checkbox"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#1C1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div class="item-body">
+          <div class="item-title">Prep bag/food for next shift</div>
+          <div class="item-note">If applicable — keep tomorrow-you out of decisions</div>
+          <div class="item-tag">NUTRITION</div>
+          
+        </div>
+      </div></div><div class="section">
+      <div class="section-head">
+        <div class="section-title">Quick Note</div>
+      </div>
+      <div class="note-box">
+        <textarea id="noteInput" placeholder="Anything to remember for next time — energy, what worked, what didn&#39;t..." rows="2"></textarea>
+      </div>
+    </div><button class="reset-link" id="resetBtn">Clear today's checklist</button></div>
+
+<script>
+(function(){
+  const DAY_MS = 24*60*60*1000;
+
+  const TASKS = {
+    onshift: [
+      { id:'food-packed', title:'Food packed for shift', note:'Pulled from Day 1 prep — no decisions needed', tag:'NUTRITION' },
+      { id:'workout-onshift', title:'Workout window', note:'Per your program — whenever the shift allows it', tag:'TRAINING' },
+      { id:'shift-log', title:'End-of-shift log (optional)', note:'One line: how the shift went, energy level', tag:'REFLECT' },
+    ],
+    off1: [
+      { id:'protect-sleep', title:'Protect sleep — no errands before wake time', note:'Recovery first. The rest of the day depends on this.', tag:'RECOVERY' },
+      { id:'grocery-run', title:'Grocery run', note:'Stock for the week — this is what kills the takeout pattern', tag:'NUTRITION' },
+      { id:'meal-prep', title:'Meal prep batch', note:'Sets up next on-shift day + Day 2 off', tag:'NUTRITION' },
+      { id:'workout-off1', title:'Workout', note:'Per your program', tag:'TRAINING' },
+      { id:'money-checkin', title:'Money check-in (10 min)', note:'Card balances, autopay confirmed, debt payoff progress', tag:'FINANCE' },
+      { id:'prep-next-shift', title:'Prep bag/food for next shift', note:'If applicable — keep tomorrow-you out of decisions', tag:'NUTRITION' },
+    ],
+    off2: [
+      { id:'workout-off2', title:'Workout (if scheduled)', note:'Per your program', tag:'TRAINING' },
+      { id:'trading-study', title:'Trading curriculum study block', note:'Protected focus time — treat it like an appointment', tag:'GROWTH' },
+      { id:'finance-deep', title:'House fund / financial admin', note:'Deeper than Day 1 — research, budget review, debt payoff math', tag:'FINANCE' },
+      { id:'open-block', title:'Open block', note:'Soccer, golf, social, whatever the day calls for', tag:'LIFE' },
+    ]
+  };
+
+  const MODE_META = {
+    onshift: { label:'ON SHIFT', title:'24 Hours — Station', cls:'on-shift', toggleCls:'on' },
+    off1:    { label:'OFF — DAY 1', title:'Reset Day', cls:'off-shift', toggleCls:'off1' },
+    off2:    { label:'OFF — DAY 2', title:'Life Day', cls:'off-shift', toggleCls:'off2' },
+  };
+
+  let state = { mode:'off1', checks:{}, note:'', lastVisit:null };
+  let saveTimer = null;
+  let activeView = 'routine'; // 'routine' | 'debt'
+
+  // Payoff order: maxed-out cards first (utilization relief + highest likely APR),
+  // then personal installment loans. Reorder anytime once real APRs are confirmed.
+  const DEBT_ORDER = [
+    'credit-one', 'cap-one-quicksilver', 'cap-one-venture-one',
+    'net-credit', 'avant', 'best-egg', 'amazon-store'
+  ];
+
+  const DEBT_DEFAULTS = {
+    'cap-one-venture-one': { name:'Capital One Venture One', group:'card', balance:3349.02, limit:3300, minPayment:115.00, apr:null, dueDate:'27th' },
+    'cap-one-quicksilver':  { name:'Capital One Quicksilver',  group:'card', balance:493.62,  limit:500,  minPayment:25.00,  apr:null, dueDate:'12th' },
+    'credit-one':           { name:'Credit One Credit Card',   group:'card', balance:1230.31, limit:1250, minPayment:null,   apr:null, dueDate:'10th' },
+    'amazon-store':         { name:'Amazon Store Card',        group:'card', balance:103.90,  limit:560,  minPayment:80.00,  apr:null, dueDate:'1st' },
+    'net-credit':           { name:'Net Credit',               group:'loan', balance:2423.43, limit:null, minPayment:66.14,  apr:null, dueDate:'8th (biweekly)' },
+    'avant':                { name:'Avant',                    group:'loan', balance:3919.00, limit:null, minPayment:167.86, apr:null, dueDate:'4th' },
+    'best-egg':             { name:'Best Egg',                 group:'loan', balance:2215.00, limit:null, minPayment:97.97,  apr:null, dueDate:'17th' },
+  };
+
+  function startingTotal(){
+    return Object.values(DEBT_DEFAULTS).reduce((sum,d)=>sum+d.balance,0);
+  }
+  const STARTING_TOTAL = startingTotal();
+
+  let debtState = { accounts:null, startingTotal:STARTING_TOTAL, lastUpdated:null };
+
+  async function loadDebtState(){
+    try{
+      const res = await window.storage.get('debt-state');
+      if(res && res.value){
+        debtState = JSON.parse(res.value);
+      }
+    }catch(e){ /* no debt state yet, use defaults */ }
+    if(!debtState.accounts){
+      debtState.accounts = JSON.parse(JSON.stringify(DEBT_DEFAULTS));
+      debtState.startingTotal = STARTING_TOTAL;
+    }
+  }
+
+  // Saves fire immediately (no debounce) so a quick app-switch or swipe-away
+  // on iOS can't beat the write to storage.
+  function queueDebtSave(){
+    saveDebtState();
+  }
+
+  async function saveDebtState(){
+    try{
+      await window.storage.set('debt-state', JSON.stringify(debtState));
+    }catch(e){ console.error('debt save failed', e); }
+  }
+
+  function todayKey(){
+    const d = new Date();
+    return d.toISOString().slice(0,10);
+  }
+
+  function fmtDate(){
+    const d = new Date();
+    const opts = { weekday:'short', month:'short', day:'numeric' };
+    return d.toLocaleDateString('en-US', opts).toUpperCase();
+  }
+
+  async function loadState(){
+    try{
+      const res = await window.storage.get('routine-state');
+      if(res && res.value){
+        const parsed = JSON.parse(res.value);
+        state = Object.assign(state, parsed);
+        const today = todayKey();
+        if(state.lastVisit && state.lastVisit !== today){
+          state.checks = {};
+        }
+        state.lastVisit = today;
+      } else {
+        state.lastVisit = todayKey();
+      }
+    }catch(e){
+      state.lastVisit = todayKey();
+    }
+    await loadStreak();
+    renderApp();
+  }
+
+  let streakData = { count:0, lastCompleteDay:null };
+  async function loadStreak(){
+    try{
+      const res = await window.storage.get('routine-streak');
+      if(res && res.value){
+        streakData = JSON.parse(res.value);
+      }
+    }catch(e){ /* no streak yet */ }
+  }
+
+  // Saves fire immediately (no debounce) so a quick app-switch or swipe-away
+  // on iOS can't beat the write to storage.
+  function queueSave(){
+    saveState();
+  }
+
+  async function saveState(){
+    try{
+      await window.storage.set('routine-state', JSON.stringify(state));
+    }catch(e){ console.error('save failed', e); }
+  }
+
+  async function saveStreak(){
+    try{
+      await window.storage.set('routine-streak', JSON.stringify(streakData));
+    }catch(e){ console.error('streak save failed', e); }
+  }
+
+  function checkStreak(tasks){
+    const allDone = tasks.every(t => state.checks[t.id]);
+    const today = todayKey();
+    if(allDone && streakData.lastCompleteDay !== today){
+      const yest = new Date(Date.now() - DAY_MS).toISOString().slice(0,10);
+      if(streakData.lastCompleteDay === yest){
+        streakData.count += 1;
+      } else if(streakData.lastCompleteDay !== today) {
+        streakData.count = 1;
+      }
+      streakData.lastCompleteDay = today;
+      saveStreak();
+    }
+  }
+
+  function setMode(mode){
+    state.mode = mode;
+    queueSave();
+    renderApp();
+  }
+
+  function toggleCheck(id){
+    state.checks[id] = !state.checks[id];
+    queueSave();
+    renderApp();
+  }
+
+  let noteSaveTimer = null;
+  function updateNote(val){
+    state.note = val;
+    clearTimeout(noteSaveTimer);
+    noteSaveTimer = setTimeout(saveState, 350);
+  }
+
+  // Safety net: if the page is hidden, backgrounded, or about to close
+  // (e.g. swiping the app away on iOS), flush any pending note save immediately
+  // rather than waiting on the debounce timer, which iOS can kill mid-wait.
+  function flushPendingSaves(){
+    clearTimeout(noteSaveTimer);
+    saveState();
+    saveDebtState();
+  }
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'hidden') flushPendingSaves();
+  });
+  window.addEventListener('pagehide', flushPendingSaves);
+  window.addEventListener('beforeunload', flushPendingSaves);
+
+  async function resetToday(){
+    if(!confirm('Clear today\'s checklist progress?')) return;
+    state.checks = {};
+    state.note = '';
+    await saveState();
+    renderApp();
+  }
+
+  function iconCheck(){
+    return '<svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="#1C1E22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function renderRoutine(){
+    const meta = MODE_META[state.mode];
+    const tasks = TASKS[state.mode];
+    const doneCount = tasks.filter(t => state.checks[t.id]).length;
+    const pct = Math.round((doneCount/tasks.length)*100);
+
+    checkStreak(tasks);
+
+    let html = '';
+
+    html += `<div class="mode-shell ${meta.cls}">
+      <div class="mode-label-row">
+        <div class="pulse-dot"></div>
+        <div class="mode-status">${meta.label}</div>
+      </div>
+      <div class="mode-title">${meta.title}</div>
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-pct">${doneCount}/${tasks.length}</div>
+      </div>
+      <div class="mode-toggle">
+        <button class="toggle-btn ${state.mode==='onshift'?'active on':''}" data-mode="onshift">On Shift</button>
+        <button class="toggle-btn ${state.mode==='off1'?'active off1':''}" data-mode="off1">Off · Day 1</button>
+        <button class="toggle-btn ${state.mode==='off2'?'active off2':''}" data-mode="off2">Off · Day 2</button>
+      </div>
+    </div>`;
+
+    html += `<div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">${streakData.count || 0}</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${pct}%</div>
+        <div class="stat-label">Today</div>
+      </div>
+    </div>`;
+
+    html += `<div class="section">
+      <div class="section-head">
+        <div class="section-title">Checklist</div>
+        <div class="section-sub">${doneCount}/${tasks.length} done</div>
+      </div>`;
+
+    tasks.forEach(t => {
+      const isDone = !!state.checks[t.id];
+      const isMoneyTask = (t.id === 'money-checkin' || t.id === 'finance-deep');
+      html += `<div class="item ${isDone?'done':''}" data-id="${t.id}">
+        <div class="checkbox">${iconCheck()}</div>
+        <div class="item-body">
+          <div class="item-title">${t.title}</div>
+          <div class="item-note">${t.note}</div>
+          <div class="item-tag">${t.tag}</div>
+          ${isMoneyTask ? `<div style="margin-top:8px;"><button class="reset-link debt-link" data-action="goto-debt" style="text-decoration:none; background:rgba(91,138,166,0.15); color:var(--steel); border-radius:7px; padding:6px 10px; font-size:11.5px; font-weight:600; letter-spacing:0.03em; width:auto; display:inline-block;">View debt tracker →</button></div>` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+
+    html += `<div class="section">
+      <div class="section-head">
+        <div class="section-title">Quick Note</div>
+      </div>
+      <div class="note-box">
+        <textarea id="noteInput" placeholder="Anything to remember for next time — energy, what worked, what didn't..." rows="2">${state.note || ''}</textarea>
+      </div>
+    </div>`;
+
+    html += `<button class="reset-link" id="resetBtn">Clear today's checklist</button>`;
+
+    document.getElementById('app').innerHTML = html;
+
+    document.querySelectorAll('.toggle-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=> setMode(btn.dataset.mode));
+    });
+    document.querySelectorAll('.item').forEach(el=>{
+      el.addEventListener('click', (e)=>{
+        if(e.target.closest('[data-action="goto-debt"]')) return;
+        toggleCheck(el.dataset.id);
+      });
+    });
+    document.querySelectorAll('[data-action="goto-debt"]').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{ e.stopPropagation(); switchView('debt'); });
+    });
+    const noteEl = document.getElementById('noteInput');
+    if(noteEl){
+      noteEl.addEventListener('input', e => updateNote(e.target.value));
+    }
+    document.getElementById('resetBtn').addEventListener('click', resetToday);
+  }
+
+  function fmtMoney(n){
+    return '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function getOrderedAccounts(){
+    const accounts = debtState.accounts;
+    return DEBT_ORDER
+      .filter(id => accounts[id])
+      .map(id => Object.assign({id}, accounts[id]));
+  }
+
+  function getCurrentTarget(ordered){
+    return ordered.find(a => a.balance > 0) || null;
+  }
+
+  function renderDebt(){
+    const ordered = getOrderedAccounts();
+    const totalRemaining = ordered.reduce((s,a)=>s+Math.max(0,a.balance),0);
+    const totalStart = debtState.startingTotal || STARTING_TOTAL;
+    const paidOff = Math.max(0, totalStart - totalRemaining);
+    const pctPaid = totalStart > 0 ? Math.round((paidOff/totalStart)*100) : 0;
+    const target = getCurrentTarget(ordered);
+
+    let html = '';
+
+    html += `<div class="debt-hero">
+      <div class="debt-hero-label">Total Remaining</div>
+      <div class="debt-hero-total">${fmtMoney(totalRemaining)}</div>
+      <div class="debt-hero-sub">of ${fmtMoney(totalStart)} starting balance</div>
+      <div class="debt-hero-bar">
+        <div class="debt-hero-track"><div class="debt-hero-fill" style="width:${pctPaid}%"></div></div>
+        <div class="debt-hero-stats">
+          <span>${fmtMoney(paidOff)} paid off</span>
+          <span>${pctPaid}%</span>
+        </div>
+      </div>
+    </div>`;
+
+    if(target){
+      const utilTxt = target.limit ? ` · ${Math.round((target.balance/target.limit)*100)}% utilization` : '';
+      html += `<div class="target-card">
+        <div class="target-eyebrow">Current Target — Attack This One</div>
+        <div class="target-name">${target.name}</div>
+        <div class="target-row"><span>Balance</span><b>${fmtMoney(target.balance)}${utilTxt}</b></div>
+        <div class="target-row"><span>Min. Payment</span><b>${target.minPayment ? fmtMoney(target.minPayment) : '—'}</b></div>
+        <div class="target-row"><span>Due</span><b>${target.dueDate || '—'}</b></div>
+      </div>`;
+    } else {
+      html += `<div class="target-card" style="border-color:var(--good);">
+        <div class="target-eyebrow" style="color:var(--good);">All Cleared</div>
+        <div class="target-name">Debt-free 🎉</div>
+      </div>`;
+    }
+
+    const groups = [
+      { key:'card', label:'Credit Cards' },
+      { key:'loan', label:'Personal Loans' },
+    ];
+
+    groups.forEach(g => {
+      const items = ordered.filter(a => a.group === g.key);
+      if(!items.length) return;
+      html += `<div class="group-divider">${g.label}</div>`;
+      items.forEach(acc => {
+        const orderIdx = DEBT_ORDER.indexOf(acc.id) + 1;
+        const isTarget = target && acc.id === target.id;
+        const isPaid = acc.balance <= 0;
+        const startBal = DEBT_DEFAULTS[acc.id] ? DEBT_DEFAULTS[acc.id].balance : acc.balance;
+        const accPct = startBal > 0 ? Math.min(100, Math.round(((startBal-acc.balance)/startBal)*100)) : 0;
+        html += `<div class="debt-item ${isTarget?'is-target':''} ${isPaid?'paid-off':''}">
+          <div class="debt-item-top">
+            <div class="debt-item-order">${orderIdx}</div>
+            <div style="flex:1;">
+              <div class="debt-item-name">${acc.name}</div>
+              <div class="debt-item-meta">${acc.limit ? 'Limit ' + fmtMoney(acc.limit) : 'Installment loan'} · Due ${acc.dueDate || '—'}</div>
+            </div>
+            ${isPaid ? '<span class="paid-badge">Paid Off</span>' : ''}
+          </div>
+          <div class="debt-item-fields">
+            <div class="field-group">
+              <div class="field-label">Balance</div>
+              <input class="field-input" type="number" step="0.01" inputmode="decimal" data-id="${acc.id}" data-field="balance" value="${acc.balance}">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Min Pmt</div>
+              <input class="field-input" type="number" step="0.01" inputmode="decimal" data-id="${acc.id}" data-field="minPayment" value="${acc.minPayment !== null ? acc.minPayment : ''}">
+            </div>
+            <div class="field-group">
+              <div class="field-label">APR %</div>
+              <input class="field-input" type="number" step="0.1" inputmode="decimal" data-id="${acc.id}" data-field="apr" value="${acc.apr !== null ? acc.apr : ''}" placeholder="?">
+            </div>
+          </div>
+          <div class="debt-item-progress">
+            <div class="debt-item-track"><div class="debt-item-fillbar" style="width:${accPct}%"></div></div>
+          </div>
+        </div>`;
+      });
+    });
+
+    html += `<button class="reset-link" id="resetDebtBtn">Reset to original balances</button>`;
+
+    document.getElementById('app').innerHTML = html;
+
+    document.querySelectorAll('.field-input').forEach(input => {
+      input.addEventListener('change', (e)=>{
+        const id = e.target.dataset.id;
+        const field = e.target.dataset.field;
+        let val = e.target.value;
+        val = val === '' ? null : parseFloat(val);
+        debtState.accounts[id][field] = val;
+        queueDebtSave();
+        renderDebt();
+      });
+    });
+    const resetDebtBtn = document.getElementById('resetDebtBtn');
+    if(resetDebtBtn){
+      resetDebtBtn.addEventListener('click', async ()=>{
+        if(!confirm('Reset all balances back to the original snapshot? This won\'t affect anything you\'ve since paid down.')) return;
+        debtState.accounts = JSON.parse(JSON.stringify(DEBT_DEFAULTS));
+        debtState.startingTotal = STARTING_TOTAL;
+        await saveDebtState();
+        renderDebt();
+      });
+    }
+  }
+
+  function switchView(view){
+    activeView = view;
+    document.getElementById('tabRoutine').classList.toggle('active', view==='routine');
+    document.getElementById('tabDebt').classList.toggle('active', view==='debt');
+    renderApp();
+  }
+
+  function renderApp(){
+    document.getElementById('datestamp').textContent = fmtDate();
+    if(activeView === 'debt'){
+      renderDebt();
+    } else {
+      renderRoutine();
+    }
+  }
+
+  document.getElementById('tabRoutine').addEventListener('click', ()=>switchView('routine'));
+  document.getElementById('tabDebt').addEventListener('click', ()=>switchView('debt'));
+
+  async function initApp(){
+    await loadState();
+    await loadDebtState();
+    document.getElementById('tabRoutine').classList.add('active');
+    renderApp();
+  }
+
+  initApp();
+})();
+</script>
+
+
+</body></html>
